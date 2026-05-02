@@ -9,7 +9,7 @@
 
 MiCA is an open-source marketing automation tool built on top of OpenRouter (text), Replicate (images), and HeyGen (avatar video). You give it a paragraph about your business; it builds a 4–6 week campaign across email, WhatsApp, and Instagram, complete with a personalized launch video.
 
-> 🏆 Built by a hackathon-winning team and released to the community as MIT-licensed software.
+> 🏆 Winners of Cohort 5 of the [AI Generalist Fellowship by Outskill](https://outskill.com) (Demo Day: 28 March 2026). Built by Satbir Singh, Sumanth Krishna, Rushin Savani, Sachin Sablok, and Aditya Ashutosh Panda — released to the community as MIT-licensed software.
 
 ---
 
@@ -155,6 +155,18 @@ mica/
 PRs welcome — especially for: improved demo data, new tone-of-voice presets, better AI prompts, and translations.
 
 Open an [issue](https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/issues) for bugs, feature requests, or questions. Discussion before large PRs is appreciated.
+
+---
+
+## Authors
+
+MiCA was built during the AI Generalist Fellowship by [Outskill](https://outskill.com) (Cohort 5, Demo Day 28 March 2026), where it won the cohort.
+
+- **Satbir Singh**
+- **Sumanth Krishna**
+- **Rushin Savani**
+- **Sachin Sablok**
+- **Aditya Ashutosh Panda**
 
 ---
 
