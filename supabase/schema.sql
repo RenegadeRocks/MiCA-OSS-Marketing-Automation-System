@@ -267,6 +267,16 @@ CREATE POLICY "Authenticated users can read waitlist" ON waitlist
 -- ── Storage buckets ─────────────────────────────────────────────────────────
 -- Three public buckets (videos and images served via public URLs in <video>
 -- and <img> tags) and two private buckets (raw user uploads — CSVs, PDFs).
+--
+-- IF THE INSERT BELOW FAILS WITH "permission denied for table buckets":
+-- Your Supabase plan tier restricts SQL-based bucket creation. Skip this
+-- block and create the 5 buckets manually via the Storage dashboard:
+--   1. Storage → New bucket → name: campaign-assets    → Public: ON, 50 MB
+--   2. Storage → New bucket → name: campaign-images    → Public: ON, 50 MB
+--   3. Storage → New bucket → name: campaign-videos    → Public: ON, 50 MB
+--   4. Storage → New bucket → name: customer-documents → Public: OFF, 20 MB
+--   5. Storage → New bucket → name: product-documents  → Public: OFF, 20 MB
+-- Then re-run only the policy block below this section.
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit) VALUES
     ('campaign-assets',    'campaign-assets',    true,  52428800),   -- 50 MB

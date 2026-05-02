@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '../../components/Layout';
 import { Button } from '../../components/ui/Button';
@@ -90,10 +90,23 @@ export const Dashboard: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
+    // Guards against the polling effect and the manual "Check now" button
+    // both firing persistVideoToStorage in parallel — without it, two copies
+    // of the same MP4 land in Storage (one orphaned). Set true while an
+    // upload+update is in flight; both code paths short-circuit if it's true.
+    const persistInFlight = useRef(false);
+
     // Poll for video completion. When heygen_video_id is set, ask HeyGen
     // directly — this works regardless of which session/tab/device started
     // the generation. Falls back to a Supabase read for legacy rows that
     // pre-date the heygen_video_id column.
+    //
+    // Tab-close-during-upload story: if the user closes the tab mid-upload,
+    // the partial blob may live in Storage (Supabase GCs abandoned multipart
+    // uploads; small enough blobs are atomic). The campaign row stays as
+    // 'generating'. Next time the Dashboard loads, polling resumes, HeyGen
+    // returns 'completed' again, and the persist step retries cleanly. The
+    // recovery path is by design — keep it intact when refactoring.
     useEffect(() => {
         if (!campaign || campaign.video_status !== 'generating') return;
 
@@ -108,16 +121,22 @@ export const Dashboard: React.FC = () => {
                     if (cancelled) return;
 
                     if (result.status === 'completed' && result.videoUrl) {
-                        // Try to persist the video to Supabase Storage so the URL
-                        // doesn't expire. Falls back to the HeyGen URL if upload fails.
-                        const persistentUrl = await persistVideoToStorage(result.videoUrl, campaignId);
-                        if (cancelled) return;
-                        await supabase.from('campaigns').update({
-                            video_url: persistentUrl,
-                            video_status: 'completed',
-                        }).eq('id', campaignId);
-                        if (cancelled) return;
-                        setCampaign(prev => prev ? { ...prev, video_url: persistentUrl, video_status: 'completed' } : prev);
+                        if (persistInFlight.current) return; // checkVideoNow is uploading
+                        persistInFlight.current = true;
+                        try {
+                            // Try to persist the video to Supabase Storage so the URL
+                            // doesn't expire. Falls back to the HeyGen URL if upload fails.
+                            const persistentUrl = await persistVideoToStorage(result.videoUrl, campaignId);
+                            if (cancelled) return;
+                            await supabase.from('campaigns').update({
+                                video_url: persistentUrl,
+                                video_status: 'completed',
+                            }).eq('id', campaignId);
+                            if (cancelled) return;
+                            setCampaign(prev => prev ? { ...prev, video_url: persistentUrl, video_status: 'completed' } : prev);
+                        } finally {
+                            persistInFlight.current = false;
+                        }
                     } else if (result.status === 'failed' || result.status === 'cancelled') {
                         await supabase.from('campaigns').update({
                             video_status: result.status,
@@ -153,17 +172,25 @@ export const Dashboard: React.FC = () => {
 
     // Manual on-demand status check — wired to the "Check now" button
     // in the wait-time UI. Same logic as the poll, just a single shot.
+    // Shares the persistInFlight guard with the polling effect so a
+    // concurrent click + poll can't double-upload the MP4.
     const checkVideoNow = async () => {
         if (!campaign?.heygen_video_id || !campaign?.id) return;
         try {
             const result = await checkVideoStatus(campaign.heygen_video_id);
             if (result.status === 'completed' && result.videoUrl) {
-                const persistentUrl = await persistVideoToStorage(result.videoUrl, campaign.id);
-                await supabase.from('campaigns').update({
-                    video_url: persistentUrl,
-                    video_status: 'completed',
-                }).eq('id', campaign.id);
-                setCampaign(prev => prev ? { ...prev, video_url: persistentUrl, video_status: 'completed' } : prev);
+                if (persistInFlight.current) return; // poll is uploading
+                persistInFlight.current = true;
+                try {
+                    const persistentUrl = await persistVideoToStorage(result.videoUrl, campaign.id);
+                    await supabase.from('campaigns').update({
+                        video_url: persistentUrl,
+                        video_status: 'completed',
+                    }).eq('id', campaign.id);
+                    setCampaign(prev => prev ? { ...prev, video_url: persistentUrl, video_status: 'completed' } : prev);
+                } finally {
+                    persistInFlight.current = false;
+                }
             } else if (result.status === 'failed' || result.status === 'cancelled') {
                 await supabase.from('campaigns').update({ video_status: result.status }).eq('id', campaign.id);
                 setCampaign(prev => prev ? { ...prev, video_status: result.status } : prev);

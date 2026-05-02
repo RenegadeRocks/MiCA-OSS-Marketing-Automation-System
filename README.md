@@ -40,6 +40,7 @@ To generate actual campaigns for your own business, you need three things: a fre
 2. In the Supabase dashboard:
    - **Settings → API** → copy your **Project URL** and **anon public key**
    - **SQL Editor → New query** → paste the entire contents of [`supabase/schema.sql`](./supabase/schema.sql) → **Run**. This creates all the tables, RLS policies, and storage buckets MiCA needs.
+   - If the SQL errors with `permission denied for table buckets`, your Supabase plan restricts SQL-based bucket creation. Follow the inline fallback instructions in `schema.sql` to create the 5 buckets manually via Storage → New bucket, then re-run the file.
 
 ### 2. Configure environment
 
@@ -65,7 +66,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`, sign up for a local account, navigate to **Settings** (gear icon in the top-right of the navbar) and paste your three API keys. Then click **Create Campaign** and follow the DoodleMap prompts.
+Open `http://localhost:5173`, sign up for a local account, click the **Settings** gear icon in the navbar, and paste your three API keys. Then click **Create Campaign** and follow the DoodleMap prompts.
 
 ---
 
