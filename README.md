@@ -9,7 +9,7 @@
 
 MiCA is an open-source marketing automation tool built on top of OpenRouter (text), Replicate (images), and HeyGen (avatar video). You give it a paragraph about your business; it builds a 4–6 week campaign across email, WhatsApp, and Instagram, complete with a personalized launch video.
 
-> 🏆 Built by the team that won the Marketing Campaigns Hackathon — now released to the community as MIT-licensed software.
+> 🏆 Built by a hackathon-winning team and released to the community as MIT-licensed software.
 
 ---
 
@@ -135,7 +135,7 @@ mica/
 - **react-router-dom v7**
 - **framer-motion** for animation
 - **Supabase** (auth, Postgres, Storage)
-- **OpenRouter** for LLM access (default model: `anthropic/claude-opus-4-6`)
+- **OpenRouter** for LLM access (default model: `anthropic/claude-opus-4.6`)
 - **Replicate** for image generation (nano-banana-pro fallback chain)
 - **HeyGen** for AI avatar video generation
 

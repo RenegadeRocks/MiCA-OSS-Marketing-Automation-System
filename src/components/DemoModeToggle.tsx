@@ -6,7 +6,7 @@ export const DemoModeToggle: React.FC = () => {
     const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
-        // Check if controls should be hidden (for actual Demo Day presentation)
+        // Set VITE_HIDE_DEMO_CONTROLS=true to hide the toggle in production builds.
         const hideControls = import.meta.env.VITE_HIDE_DEMO_CONTROLS === 'true';
         if (hideControls) {
             setIsVisible(false);

@@ -12,23 +12,21 @@ interface AIRequestOptions {
 export async function callAI({ systemPrompt, userPrompt, maxTokens = 8000, temperature = 0.7 }: AIRequestOptions): Promise<string> {
     const apiKey = getApiKey('OPENROUTER_API_KEY');
     // Use user-provided model or fall back to a sensible default
-    const model = import.meta.env.VITE_OPENROUTER_MODEL || "anthropic/claude-opus-4-6";
+    const model = import.meta.env.VITE_OPENROUTER_MODEL || "anthropic/claude-opus-4.6";
 
-    console.log("AI Service: Initiating call...", { model, maxTokens });
+    if (import.meta.env.DEV) console.log("AI Service: Initiating call...", { model, maxTokens });
 
     if (!apiKey || apiKey.includes('your_openrouter_api_key')) {
-        console.error("AI Service: Missing valid OpenRouter API Key");
         throw new Error("Missing OpenRouter API Key. Add it via Settings or set VITE_OPENROUTER_API_KEY in .env");
     }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
-        console.log("AI Service: Request timed out after 300s");
+        if (import.meta.env.DEV) console.log("AI Service: Request timed out after 300s");
         controller.abort();
     }, 300000); // 300 second timeout
 
     try {
-        console.log("AI Service: Sending fetch request...");
         const response = await fetch(OPENROUTER_API_URL, {
             method: "POST",
             headers: {

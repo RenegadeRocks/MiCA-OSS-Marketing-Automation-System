@@ -1,6 +1,12 @@
 import { supabase } from '../lib/supabase';
 import { getApiKey } from '../lib/apiKeys';
 
+// Dev: hit /api/replicate/* (proxied by vite.config.ts to api.replicate.com).
+// Production: hit Replicate directly. Replicate's API supports browser CORS.
+const REPLICATE_BASE = import.meta.env.DEV
+  ? '/api/replicate'
+  : 'https://api.replicate.com/v1';
+
 interface ModelConfig {
   name: string;
   url: string;
@@ -13,7 +19,7 @@ interface ModelConfig {
 const IMAGE_MODELS: ModelConfig[] = [
   {
     name: 'nano-banana-pro',
-    url: '/api/replicate/models/google/nano-banana-pro/predictions',
+    url: REPLICATE_BASE + '/models/google/nano-banana-pro/predictions',
     buildInput: (prompt) => ({
       prompt,
       width: 1080,
@@ -25,7 +31,7 @@ const IMAGE_MODELS: ModelConfig[] = [
   },
   {
     name: 'nano-banana-2',
-    url: '/api/replicate/models/google/nano-banana-2/predictions',
+    url: REPLICATE_BASE + '/models/google/nano-banana-2/predictions',
     buildInput: (prompt) => ({
       prompt,
       num_outputs: 1,
@@ -36,7 +42,7 @@ const IMAGE_MODELS: ModelConfig[] = [
   },
   {
     name: 'nano-banana',
-    url: '/api/replicate/models/google/nano-banana/predictions',
+    url: REPLICATE_BASE + '/models/google/nano-banana/predictions',
     buildInput: (prompt) => ({
       prompt,
       width: 1080,
@@ -47,7 +53,7 @@ const IMAGE_MODELS: ModelConfig[] = [
   {
     // Seedream 3 — update path if needed ("Seedream 4" per user)
     name: 'seedream-3',
-    url: '/api/replicate/models/bytedance/seedream-3/predictions',
+    url: REPLICATE_BASE + '/models/bytedance/seedream-3/predictions',
     buildInput: (prompt) => ({
       prompt,
       aspect_ratio: '1:1',
@@ -89,7 +95,9 @@ async function runPrediction(model: ModelConfig, prompt: string): Promise<string
   // Poll until completed or failed
   while (result.status !== 'succeeded' && result.status !== 'failed') {
     await new Promise(resolve => setTimeout(resolve, 2000));
-    const getUrl = result.urls.get.replace('https://api.replicate.com/v1', '/api/replicate');
+    const getUrl = import.meta.env.DEV
+      ? result.urls.get.replace('https://api.replicate.com/v1', '/api/replicate')
+      : result.urls.get;
     const pollResponse = await fetch(getUrl, { headers: authHeader });
     result = await pollResponse.json();
   }

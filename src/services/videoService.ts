@@ -1,8 +1,12 @@
 import { getApiKey } from '../lib/apiKeys';
 import { supabase } from '../lib/supabase';
 
-const HEYGEN_API_URL = "/api/heygen/v1/video_agent/generate";
-const HEYGEN_STATUS_URL = "/api/heygen/v1/video_status.get";
+// In dev, Vite proxies /api/heygen/* to the real HeyGen API (see vite.config.ts).
+// In a production build, that proxy is gone — fall back to direct URLs.
+// HeyGen's API supports browser CORS for the endpoints we use.
+const HEYGEN_BASE = import.meta.env.DEV ? "/api/heygen" : "https://api.heygen.com";
+const HEYGEN_API_URL = `${HEYGEN_BASE}/v1/video_agent/generate`;
+const HEYGEN_STATUS_URL = `${HEYGEN_BASE}/v1/video_status.get`;
 const VIDEO_BUCKET = 'campaign-videos';
 
 // HeyGen does not expose a public "cancel in-progress generation" endpoint.

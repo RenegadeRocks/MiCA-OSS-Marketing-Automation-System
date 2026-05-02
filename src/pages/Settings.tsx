@@ -55,9 +55,11 @@ const KEY_CONFIGS: KeyConfig[] = [
         description: 'Used for image generation (campaign visuals).',
         helpUrl: 'https://replicate.com/account/api-tokens',
         test: async (key) => {
-            // Replicate's account endpoint blocks browser CORS, so we hit it via the
-            // Vite dev proxy that the app already uses for /api/replicate/*.
-            const res = await fetch('/api/replicate/account', {
+            // Dev: via Vite proxy. Prod: direct (Replicate supports browser CORS).
+            const url = import.meta.env.DEV
+                ? '/api/replicate/account'
+                : 'https://api.replicate.com/v1/account';
+            const res = await fetch(url, {
                 headers: { Authorization: `Bearer ${key}` },
             });
             if (!res.ok) {
@@ -72,8 +74,10 @@ const KEY_CONFIGS: KeyConfig[] = [
         description: 'Used for AI avatar video generation (the launch video).',
         helpUrl: 'https://app.heygen.com/settings?nav=API',
         test: async (key) => {
-            // Same dev-proxy story as Replicate for CORS reasons.
-            const res = await fetch('/api/heygen/v2/user/remaining_quota', {
+            const url = import.meta.env.DEV
+                ? '/api/heygen/v2/user/remaining_quota'
+                : 'https://api.heygen.com/v2/user/remaining_quota';
+            const res = await fetch(url, {
                 headers: { 'X-Api-Key': key },
             });
             if (!res.ok) {
