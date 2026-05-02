@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* Removed display: flex and place-items: center which were causing layout issues */
+  background-color: #030712;
+  /* Default to dark background (gray-950) to match app theme */
+  color: white;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes bamShake {
+  0% {
+    transform: scale(1);
+  }
+
+  20% {
+    transform: scale(1.4) rotate(-4deg);
+  }
+
+  40% {
+    transform: scale(1.25) rotate(3deg);
+  }
+
+  60% {
+    transform: scale(1.3) rotate(-2deg);
+  }
+
+  80% {
+    transform: scale(1.28) rotate(2deg);
+  }
+
+  100% {
+    transform: scale(1.3) rotate(0deg);
+  }
+}
+
+.hover-bam:hover h2,
+.is-bamming h2 {
+  animation: bamShake 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Ensure smooth transition back to normal size when animation class is removed */
+.hover-bam h2 {
+  transition: transform 0.3s ease-out;
+}
+
+/* Premium Hover Effects */
+.accent-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.accent-bar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background-color: var(--color-accent, #FF7A00);
+  /* Using brand orange as accent */
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px var(--color-accent, #FF7A00);
+}
+
+.accent-bar:hover::before {
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.card-lift {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-lift:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 10px 15px -5px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(255, 122, 0, 0.5);
+  background-color: rgba(255, 255, 255, 0.05);
+  /* Slight glassmorphism lightening */
+  border-color: rgba(255, 122, 0, 0.3);
+}
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+  /* gray-950 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  /* gray-800 */
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF7A00;
+  /* MiCA Orange */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #27272a #09090b;
+}
