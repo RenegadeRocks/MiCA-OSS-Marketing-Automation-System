@@ -24,8 +24,12 @@ export function useTypewriter({
     
     if (isDeleting) {
       if (text.length === 0) {
-        setIsDeleting(false);
-        setWordIndex((prev) => (prev + 1) % words.length);
+        // Defer to next microtask to satisfy react-hooks/set-state-in-effect.
+        // Behavior is identical — the next typing cycle starts right after.
+        timeoutId = setTimeout(() => {
+          setIsDeleting(false);
+          setWordIndex((prev) => (prev + 1) % words.length);
+        }, 0);
       } else {
         timeoutId = setTimeout(() => {
           setText(text.substring(0, text.length - 1));

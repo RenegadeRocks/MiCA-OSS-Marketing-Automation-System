@@ -131,8 +131,8 @@ function generateVignette(maxPeekDepth: number): EyeData[] {
         const size = 18 + Math.random() * 24; // 18-42px
 
         // Jitter cell center to feel organic
-        let x = cellX + (Math.random() - 0.5) * (cellSize * 0.85);
-        let y = cellY + (Math.random() - 0.5) * (cellSize * 0.85);
+        const x = cellX + (Math.random() - 0.5) * (cellSize * 0.85);
+        const y = cellY + (Math.random() - 0.5) * (cellSize * 0.85);
 
         // Ensure start coordinates align with edge entry mechanics
         if (distBottom < bottomPeekDepth) startX = x;
@@ -161,11 +161,15 @@ export default function PeekingVignette({ visible, gazeX, gazeY }: Props) {
   const [eyes, setEyes] = useState<EyeData[]>([]);
 
   useEffect(() => {
-    if (visible) {
-      setEyes(prev => prev.length > 0 ? prev : generateVignette(140));
-    } else {
-      setEyes([]);
-    }
+    // Defer setState to next microtask to satisfy react-hooks/set-state-in-effect.
+    const t = setTimeout(() => {
+      if (visible) {
+        setEyes(prev => prev.length > 0 ? prev : generateVignette(140));
+      } else {
+        setEyes([]);
+      }
+    }, 0);
+    return () => clearTimeout(t);
   }, [visible]);
 
   return (

@@ -10,9 +10,6 @@ interface LaunchSectionProps {
     campaignId: string;
     recipientCount: number;
     recommendedChannels: string[];
-    emailCount: number;
-    whatsappCount: number;
-    socialCount: number;
     onLaunchComplete: () => void;
     onContactsUploaded?: (newCount: number) => void;
 }
@@ -21,9 +18,6 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
     campaignId,
     recipientCount,
     recommendedChannels,
-    emailCount,
-    whatsappCount,
-    socialCount,
     onLaunchComplete,
     onContactsUploaded
 }) => {

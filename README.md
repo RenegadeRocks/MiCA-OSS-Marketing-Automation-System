@@ -11,6 +11,8 @@ MiCA is an open-source marketing automation tool built on top of OpenRouter (tex
 
 > 🏆 Winners of Cohort 5 of the [AI Generalist Fellowship by Outskill](https://outskill.com) (Demo Day: 28 March 2026). Built by Satbir Singh, Sumanth Krishna, Rushin Savani, Sachin Sablok, and Aditya Ashutosh Panda — released to the community as MIT-licensed software.
 
+> ⚠️ **Deployment scope.** MiCA is designed for **self-hosted or trusted single-user use**. In the current architecture, provider API keys (OpenRouter, Replicate, HeyGen) are read in the browser and called directly from the client — this is fine for personal use, internal tools, or a small trusted team, but **don't expose this app publicly without putting the AI calls behind your own server**. See [Limitations and roadmap](#limitations-and-roadmap) below.
+
 ---
 
 ## Try it without setup (Demo Mode)

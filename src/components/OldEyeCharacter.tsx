@@ -71,7 +71,7 @@ export default function OldEyeCharacter({ size = 108, onGiggle }: EyeCharacterPr
 
   // ── Velocity-based excitement ────────────────────────────────────────────
   const [isExcited, setIsExcited] = useState(false);
-  const lastMouse = useRef({ x: 0, y: 0, time: Date.now() });
+  const lastMouse = useRef({ x: 0, y: 0, time: 0 });
   const calmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cooldownUntil = useRef<number>(0);
 

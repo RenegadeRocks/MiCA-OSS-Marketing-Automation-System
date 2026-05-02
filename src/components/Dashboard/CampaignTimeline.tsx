@@ -157,7 +157,7 @@ export const CampaignTimeline: React.FC<CampaignTimelineProps> = ({ campaignId, 
     };
 
     const simulateDemoProgress = (initialSchedule: ScheduleEntry[]) => {
-        let cur = [...initialSchedule];
+        const cur = [...initialSchedule];
         const day1Indices = cur.map((t, i) => t.scheduled_day === 1 && t.status !== 'completed' ? i : -1).filter(i => i !== -1);
         if (!day1Indices.length) return;
         let taskIndex = 0;

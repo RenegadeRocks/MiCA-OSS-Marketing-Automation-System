@@ -1446,9 +1446,6 @@ export const Dashboard: React.FC = () => {
                                         campaignId={campaign.id}
                                         recipientCount={recipientCount}
                                         recommendedChannels={campaign.recommended_channels}
-                                        emailCount={emails.length}
-                                        whatsappCount={whatsappMessages.length}
-                                        socialCount={socialPosts.length}
                                         onContactsUploaded={(count) => setRecipientCount(count)}
                                         onLaunchComplete={() => {
                                             // In Demo Mode, update the global object so state persists during navigation

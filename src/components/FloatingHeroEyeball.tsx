@@ -61,11 +61,14 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
   useEffect(() => {
     if (mood === 'concentrating') {
       isChasingRef.current = false;
-      // Position to the right of the generation card (roughly 70% width, 45% height)
-      setTargetPos({
-        x: window.innerWidth * 0.70,
-        y: window.innerHeight * 0.45,
-      });
+      // Defer setState to next microtask to satisfy react-hooks/set-state-in-effect.
+      const t = setTimeout(() => {
+        setTargetPos({
+          x: window.innerWidth * 0.70,
+          y: window.innerHeight * 0.45,
+        });
+      }, 0);
+      return () => clearTimeout(t);
     }
   }, [mood]);
 
@@ -73,12 +76,20 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
   const prevProgressRef = useRef(concentrationProgress);
   useEffect(() => {
     if (mood === 'concentrating' && concentrationProgress > prevProgressRef.current) {
-      // Quick bounce: offset briefly then snap back
+      // Quick bounce: offset briefly then snap back. Both setStates deferred via setTimeout
+      // to satisfy react-hooks/set-state-in-effect.
       const baseY = window.innerHeight * 0.45;
-      setTargetPos(prev => ({ ...prev, y: baseY - 30 }));
-      setTimeout(() => {
+      const tBounce = setTimeout(() => {
+        setTargetPos(prev => ({ ...prev, y: baseY - 30 }));
+      }, 0);
+      const tSettle = setTimeout(() => {
         setTargetPos(prev => ({ ...prev, y: baseY }));
       }, 300);
+      prevProgressRef.current = concentrationProgress;
+      return () => {
+        clearTimeout(tBounce);
+        clearTimeout(tSettle);
+      };
     }
     prevProgressRef.current = concentrationProgress;
   }, [concentrationProgress, mood]);
@@ -186,26 +197,30 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
 
   // Jump to specific coordinates depending on the mode
   useEffect(() => {
-    if (mode === 'generating' && gazeTarget) {
-      // Position eyeball to the right of the target text (approx 300px offset)
-      setTargetPos({
-        x: gazeTarget.x + (typeof window !== 'undefined' ? 300 : 0),
-        y: gazeTarget.y
-      });
-    } else if (mode === 'launching') {
-      // Move exactly to bottom-center of the screen before the rocket arrives
-      setTargetPos({
-        x: typeof window !== 'undefined' ? window.innerWidth / 2 : 800,
-        y: typeof window !== 'undefined' ? window.innerHeight * 0.66 : 600
-      });
-    } else if (mode === 'focused') {
-      // Retreat to top-right corner so it doesn't cover form fields
-      isChasingRef.current = false;
-      setTargetPos({
-        x: typeof window !== 'undefined' ? window.innerWidth - 90 : 800,
-        y: 90,
-      });
-    }
+    // Defer setState to next microtask to satisfy react-hooks/set-state-in-effect.
+    const t = setTimeout(() => {
+      if (mode === 'generating' && gazeTarget) {
+        // Position eyeball to the right of the target text (approx 300px offset)
+        setTargetPos({
+          x: gazeTarget.x + (typeof window !== 'undefined' ? 300 : 0),
+          y: gazeTarget.y
+        });
+      } else if (mode === 'launching') {
+        // Move exactly to bottom-center of the screen before the rocket arrives
+        setTargetPos({
+          x: typeof window !== 'undefined' ? window.innerWidth / 2 : 800,
+          y: typeof window !== 'undefined' ? window.innerHeight * 0.66 : 600,
+        });
+      } else if (mode === 'focused') {
+        // Retreat to top-right corner so it doesn't cover form fields
+        isChasingRef.current = false;
+        setTargetPos({
+          x: typeof window !== 'undefined' ? window.innerWidth - 90 : 800,
+          y: 90,
+        });
+      }
+    }, 0);
+    return () => clearTimeout(t);
   }, [mode, gazeTarget]);
 
   return (

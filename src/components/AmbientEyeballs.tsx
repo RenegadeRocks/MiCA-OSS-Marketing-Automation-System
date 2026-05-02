@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useSpring } from 'framer-motion';
 
 /**
@@ -113,12 +113,10 @@ function AmbientEye({ eye, gazeX, gazeY }: { eye: AmbientEye; gazeX: number; gaz
 }
 
 export default function AmbientEyeballs({ gazeX, gazeY }: { gazeX: number; gazeY: number }) {
-  const eyesRef = useRef<AmbientEye[]>([]);
-
-  if (eyesRef.current.length === 0) {
+  const [eyes] = useState<AmbientEye[]>(() => {
     const W = typeof window !== 'undefined' ? window.innerWidth : 1200;
     const H = typeof window !== 'undefined' ? window.innerHeight : 800;
-    eyesRef.current = [
+    return [
       {
         id: 0, size: 28, irisColor: IRIS_COLORS[0],
         startX: W * 0.15, startY: H * 0.35, opacity: 1,
@@ -132,11 +130,11 @@ export default function AmbientEyeballs({ gazeX, gazeY }: { gazeX: number; gazeY
         startX: W * 0.5, startY: H * 0.75, opacity: 1,
       },
     ];
-  }
+  });
 
   return (
     <>
-      {eyesRef.current.map((eye) => (
+      {eyes.map((eye) => (
         <AmbientEye key={eye.id} eye={eye} gazeX={gazeX} gazeY={gazeY} />
       ))}
     </>

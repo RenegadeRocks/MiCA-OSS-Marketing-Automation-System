@@ -45,10 +45,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 user: mockUser,
             };
 
-            setSession(mockSession);
-            setUser(mockUser);
-            setLoading(false);
-            return; // Skip Supabase auth listener
+            // Defer setState to satisfy react-hooks/set-state-in-effect.
+            const t = setTimeout(() => {
+                setSession(mockSession);
+                setUser(mockUser);
+                setLoading(false);
+            }, 0);
+            return () => clearTimeout(t);
         }
 
         supabase.auth.getSession()

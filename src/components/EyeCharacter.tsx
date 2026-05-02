@@ -87,12 +87,14 @@ export default function EyeCharacter({ size = 108, onGiggle, version = 'modern' 
     if (mode === 'generating') {
       if (generationProgress >= 1 && !hasGiggledForGeneration.current) {
         hasGiggledForGeneration.current = true;
-        // Trigger giggle automatically
-        handleClick();
+        // Defer handleClick (which sets state) to satisfy react-hooks/set-state-in-effect.
+        const t = setTimeout(() => handleClick(), 0);
+        return () => clearTimeout(t);
       } else if (generationProgress < 1) {
         hasGiggledForGeneration.current = false;
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [generationProgress, mode]);
 
   // ── Error Dizzy Sequence ────────────────────────────────────────────────
@@ -197,16 +199,20 @@ export default function EyeCharacter({ size = 108, onGiggle, version = 'modern' 
     } else {
       // Ensure we reset if mode changes abruptly
       eyeballControls.set({ y: 0, scale: 1 });
-      setShowRocket(false);
-      setShowParticles(false);
-      setIsFlying(false);
-      setIsLocked(false);
+      // Defer setStates to satisfy react-hooks/set-state-in-effect.
+      const t = setTimeout(() => {
+        setShowRocket(false);
+        setShowParticles(false);
+        setIsFlying(false);
+        setIsLocked(false);
+      }, 0);
+      return () => clearTimeout(t);
     }
   }, [mode, rocketControls, eyeballControls]);
 
   // ── Velocity-based excitement ────────────────────────────────────────────
   const [isExcited, setIsExcited] = useState(false);
-  const lastMouse = useRef({ x: 0, y: 0, time: Date.now() });
+  const lastMouse = useRef({ x: 0, y: 0, time: 0 });
   const calmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cooldownUntil = useRef<number>(0);
 

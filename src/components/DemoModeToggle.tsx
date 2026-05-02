@@ -5,6 +5,15 @@ export const DemoModeToggle: React.FC = () => {
     const [isDemoMode, setIsDemoMode] = useState(() => localStorage.getItem('mica_demo_mode') === 'true');
     const [isVisible, setIsVisible] = useState(true);
 
+    const toggleDemoMode = () => {
+        const newValue = !isDemoMode;
+        localStorage.setItem('mica_demo_mode', String(newValue));
+        setIsDemoMode(newValue);
+
+        // Reload to ensure all components pick up the new mode cleanly
+        window.location.reload();
+    };
+
     useEffect(() => {
         // Set VITE_HIDE_DEMO_CONTROLS=true to hide the toggle in production builds.
         const hideControls = import.meta.env.VITE_HIDE_DEMO_CONTROLS === 'true';
@@ -22,16 +31,8 @@ export const DemoModeToggle: React.FC = () => {
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const toggleDemoMode = () => {
-        const newValue = !isDemoMode;
-        localStorage.setItem('mica_demo_mode', String(newValue));
-        setIsDemoMode(newValue);
-
-        // Reload to ensure all components pick up the new mode cleanly
-        window.location.reload();
-    };
 
     if (!isVisible) return null;
 

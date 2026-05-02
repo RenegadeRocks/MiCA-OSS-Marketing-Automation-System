@@ -59,7 +59,16 @@ const dynamicPhrases = [
 const TypewriterHeading = ({ text, className }: { text: string, className?: string }) => {
     // Split text into words to handle wrapping correctly
     const words = text.split(' ');
-    let charCount = 0;
+    // Precompute the running char offset before each word (incl. spaces).
+    // Done outside JSX to avoid mutating during render (react-hooks/immutability).
+    const wordOffsets: number[] = [];
+    {
+        let acc = 0;
+        for (const w of words) {
+            wordOffsets.push(acc);
+            acc += w.length + 1;
+        }
+    }
 
     return (
         <motion.h2
@@ -70,6 +79,7 @@ const TypewriterHeading = ({ text, className }: { text: string, className?: stri
         >
             {words.map((word, wordIndex) => {
                 const chars = word.split('');
+                const charCount = wordOffsets[wordIndex];
                 const result = (
                     <span key={wordIndex} className="whitespace-nowrap flex">
                         {chars.map((char, charIndex) => {
@@ -101,7 +111,6 @@ const TypewriterHeading = ({ text, className }: { text: string, className?: stri
                         )}
                     </span>
                 );
-                charCount += chars.length + 1; // +1 for the space
                 return result;
             })}
             <motion.span

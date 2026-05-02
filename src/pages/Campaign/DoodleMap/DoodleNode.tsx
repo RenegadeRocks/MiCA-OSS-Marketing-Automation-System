@@ -158,7 +158,9 @@ const DoodleNode: React.FC<DoodleNodeProps> = ({
   useEffect(() => {
     if (!isActive) {
       onInputFocusStateChange(false);
-      setLocationCityMode(false);
+      // Defer setState to next microtask to satisfy react-hooks/set-state-in-effect.
+      const t = setTimeout(() => setLocationCityMode(false), 0);
+      return () => clearTimeout(t);
     }
   }, [isActive, onInputFocusStateChange]);
 

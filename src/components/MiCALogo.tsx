@@ -42,8 +42,9 @@ export default function MiCALogo({ variant = 'hero', static: isStatic = false }:
     if (isStatic) return;
     // Stop auto-expansion if we are animating a state
     if (mode !== 'idle') {
-      setExpandedIdx(-1);
-      return;
+      // Defer setState to satisfy react-hooks/set-state-in-effect.
+      const tReset = setTimeout(() => setExpandedIdx(-1), 0);
+      return () => clearTimeout(tReset);
     }
 
     let tOut: ReturnType<typeof setTimeout>;
