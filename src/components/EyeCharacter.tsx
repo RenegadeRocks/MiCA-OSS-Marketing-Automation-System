@@ -208,6 +208,9 @@ export default function EyeCharacter({ size = 108, onGiggle, version = 'modern' 
       }, 0);
       return () => clearTimeout(t);
     }
+    // gigglesControls/onGiggle would re-trigger the launch sequence on every prop change
+    // — we only want it to run when `mode` changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, rocketControls, eyeballControls]);
 
   // ── Velocity-based excitement ────────────────────────────────────────────

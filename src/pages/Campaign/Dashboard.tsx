@@ -22,6 +22,9 @@ interface Campaign {
     id: string;
     product_name: string;
     status: string;
+    // marketing_plan is the parsed LLM strategy output. Modeling its full schema
+    // is out of scope for this typing pass; tracked as known tech debt.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     marketing_plan: any;
     recommended_channels: string[];
     video_url?: string;
@@ -33,8 +36,8 @@ interface Campaign {
     launch_date?: string;
     campaign_start_date?: string;
     budget: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    // Allow extra Supabase-row fields not modelled here.
+    [key: string]: unknown;
 }
 
 interface EmailTemplate {
@@ -83,6 +86,8 @@ export const Dashboard: React.FC = () => {
     useEffect(() => {
         setEyeballHidden(true);
         return () => setEyeballHidden(false);
+        // setEyeballHidden is stable from context; mount/unmount is the intended trigger.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -168,6 +173,9 @@ export const Dashboard: React.FC = () => {
             cancelled = true;
             clearInterval(interval);
         };
+        // Including the full `campaign` object would re-run the polling on every refetch.
+        // We deliberately depend only on the stable identifiers that gate the polling logic.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [campaign?.video_status, campaign?.id, campaign?.heygen_video_id]);
 
     // Manual on-demand status check — wired to the "Check now" button
@@ -226,12 +234,12 @@ export const Dashboard: React.FC = () => {
 
             // DEMO MODE CHECK
             if (DEMO_MODE_ENABLED()) {
-                setCampaign(DEMO_CAMPAIGN as any);
+                setCampaign(DEMO_CAMPAIGN as unknown as Campaign);
 
                 setRecipientCount(1250); // Hardcoded demo count
-                setEmails(DEMO_CAMPAIGN.email_templates as any[]);
-                setWhatsappMessages(DEMO_CAMPAIGN.whatsapp_messages as any[]);
-                setSocialPosts(DEMO_CAMPAIGN.social_posts as any[]);
+                setEmails(DEMO_CAMPAIGN.email_templates as EmailTemplate[]);
+                setWhatsappMessages(DEMO_CAMPAIGN.whatsapp_messages as WhatsAppMessage[]);
+                setSocialPosts(DEMO_CAMPAIGN.social_posts as SocialPost[]);
 
                 // Set initial tab based on demo status
                 const currentStatus = DEMO_CAMPAIGN.status;
@@ -326,7 +334,7 @@ export const Dashboard: React.FC = () => {
         }
     };
 
-    const handleSendTest = async (assetId: string, type: 'email' | 'whatsapp', content: any) => {
+    const handleSendTest = async (assetId: string, type: 'email' | 'whatsapp', content: EmailTemplate | WhatsAppMessage) => {
         setSendingTest(assetId);
         try {
             await triggerWebhook('send_test', {
@@ -482,11 +490,14 @@ export const Dashboard: React.FC = () => {
         const budget = p.budget_allocation || {};
         const outcomes = p.expected_outcomes || {};
         const budgetBreakdown = budget.breakdown || budget;
-        const budgetEntries = Object.entries(budgetBreakdown).filter(([key]) => key !== 'total' && key !== 'rationale').map(([channel, data]: [string, any]) => ({
-            channel,
-            amount: typeof data === 'number' ? data : data?.amount || 0,
-            purpose: typeof data === 'object' ? data?.purpose : undefined,
-        }));
+        const budgetEntries = Object.entries(budgetBreakdown).filter(([key]) => key !== 'total' && key !== 'rationale').map(([channel, data]) => {
+            const d = data as number | { amount?: number; purpose?: string } | null | undefined;
+            return {
+                channel,
+                amount: typeof d === 'number' ? d : d?.amount || 0,
+                purpose: typeof d === 'object' && d !== null ? d.purpose : undefined,
+            };
+        });
         const maxBudget = Math.max(...budgetEntries.map(e => e.amount), 1);
         const mName = methodology?.name?.replace('_', ' ') || 'Marketing';
         const dur = p.campaign_duration_days || 28;
@@ -498,7 +509,7 @@ export const Dashboard: React.FC = () => {
             const label = ch === 'email' ? 'Email' : ch === 'whatsapp' ? 'WhatsApp' : 'Instagram';
             const color = ch === 'email' ? '#60a5fa' : ch === 'whatsapp' ? '#4ade80' : '#f472b6';
             const countLabel = ch === 'email' ? 'Emails' : ch === 'whatsapp' ? 'Messages' : 'Posts';
-            const stages = cp.stages?.map((s: any) =>
+            const stages = cp.stages?.map((s: { stage_name: string; day_range?: [number, number]; purpose: string }) =>
                 `<div style="display:inline-block;background:#f3f4f6;border-radius:6px;padding:8px 14px;margin:4px 6px 4px 0;font-size:14px;">
                     <strong style="color:${color};">D${s.day_range?.[0]}&#8211;${s.day_range?.[1]}</strong>
                     <span style="margin-left:6px;font-weight:600;">${s.stage_name}</span>
@@ -552,8 +563,8 @@ export const Dashboard: React.FC = () => {
             </div>`
         ).join('') || '';
 
-        const timelineHtml = p.weekly_plan?.map((week: any) => {
-            const tactics = week.tactics?.map((t: any) => {
+        const timelineHtml = p.weekly_plan?.map((week: { week: number; theme: string; days_covered?: string; goal?: string; tactics?: Array<{ day: number; channel: string; action: string; description?: string }> }) => {
+            const tactics = week.tactics?.map((t) => {
                 const chColor = t.channel === 'email' ? '#3b82f6' : t.channel === 'whatsapp' ? '#22c55e' : '#ec4899';
                 return `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;padding-left:16px;border-left:3px solid ${chColor};-webkit-print-color-adjust:exact;print-color-adjust:exact;">
                     <div>
@@ -732,11 +743,14 @@ export const Dashboard: React.FC = () => {
 
         // Budget bar chart helper
         const budgetBreakdown = budget.breakdown || budget;
-        const budgetEntries = Object.entries(budgetBreakdown).filter(([key]) => key !== 'total' && key !== 'rationale').map(([channel, data]: [string, any]) => ({
-            channel,
-            amount: typeof data === 'number' ? data : data?.amount || 0,
-            purpose: typeof data === 'object' ? data?.purpose : undefined,
-        }));
+        const budgetEntries = Object.entries(budgetBreakdown).filter(([key]) => key !== 'total' && key !== 'rationale').map(([channel, data]) => {
+            const d = data as number | { amount?: number; purpose?: string } | null | undefined;
+            return {
+                channel,
+                amount: typeof d === 'number' ? d : d?.amount || 0,
+                purpose: typeof d === 'object' && d !== null ? d.purpose : undefined,
+            };
+        });
         const maxBudget = Math.max(...budgetEntries.map(e => e.amount), 1);
 
         // Methodology gradient colors
@@ -875,7 +889,7 @@ export const Dashboard: React.FC = () => {
                                         <p className="text-gray-100 text-lg mb-6 leading-relaxed">{channelPlan.email.rationale}</p>
                                         {channelPlan.email.stages?.length > 0 && (
                                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                                                {channelPlan.email.stages.map((stage: any, i: number) => (
+                                                {channelPlan.email.stages.map((stage: { stage_name: string; day_range?: [number, number]; purpose: string }, i: number) => (
                                                     <div key={i} className="bg-gray-900/60 p-5 rounded-xl border border-white/5">
                                                         <div className="flex items-center gap-3 mb-2">
                                                             <span className="bg-blue-500/30 text-blue-200 text-sm font-bold px-2.5 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
@@ -908,7 +922,7 @@ export const Dashboard: React.FC = () => {
                                         )}
                                         {channelPlan.whatsapp.stages?.length > 0 && (
                                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                                                {channelPlan.whatsapp.stages.map((stage: any, i: number) => (
+                                                {channelPlan.whatsapp.stages.map((stage: { stage_name: string; day_range?: [number, number]; purpose: string }, i: number) => (
                                                     <div key={i} className="bg-gray-900/60 p-5 rounded-xl border border-white/5">
                                                         <div className="flex items-center gap-3 mb-2">
                                                             <span className="bg-green-500/30 text-green-200 text-sm font-bold px-2.5 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
@@ -953,7 +967,7 @@ export const Dashboard: React.FC = () => {
 
                                         {channelPlan.instagram.stages?.length > 0 && (
                                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                                                {channelPlan.instagram.stages.map((stage: any, i: number) => (
+                                                {channelPlan.instagram.stages.map((stage: { stage_name: string; day_range?: [number, number]; purpose: string }, i: number) => (
                                                     <div key={i} className="bg-gray-900/60 p-5 rounded-xl border border-white/5">
                                                         <div className="flex items-center gap-3 mb-2">
                                                             <span className="bg-pink-500/30 text-pink-200 text-sm font-bold px-2.5 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
@@ -1053,7 +1067,7 @@ export const Dashboard: React.FC = () => {
                                     Campaign Timeline
                                 </h3>
                                 <div className="space-y-8">
-                                    {plan.weekly_plan.map((week: any, wIdx: number) => (
+                                    {plan.weekly_plan.map((week: { week: number; theme: string; days_covered?: string; goal?: string; tactics?: Array<{ day: number; channel: string; action: string; description?: string }> }, wIdx: number) => (
                                         <div key={wIdx} className="relative">
                                             <div className="flex items-center gap-3 mb-3">
                                                 <div className="bg-indigo-500/20 text-indigo-300 text-sm font-bold px-4 py-2 rounded-lg">
@@ -1066,9 +1080,9 @@ export const Dashboard: React.FC = () => {
                                             </div>
                                             <p className="text-gray-300 text-sm mb-4 ml-1">{week.goal}</p>
 
-                                            {week.tactics?.length > 0 && (
+                                            {week.tactics && week.tactics.length > 0 && (
                                                 <div className="ml-5 border-l-2 border-gray-700 pl-5 space-y-3">
-                                                    {week.tactics.map((tactic: any, tIdx: number) => {
+                                                    {week.tactics.map((tactic, tIdx: number) => {
                                                         const channelColor = tactic.channel === 'email' ? 'bg-blue-400'
                                                             : tactic.channel === 'whatsapp' ? 'bg-green-400'
                                                                 : tactic.channel === 'instagram' ? 'bg-pink-400'

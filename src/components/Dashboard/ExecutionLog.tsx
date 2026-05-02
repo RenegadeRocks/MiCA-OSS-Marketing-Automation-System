@@ -55,6 +55,8 @@ export const ExecutionLog: React.FC<ExecutionLogProps> = ({ campaignId }) => {
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
+        // fetchLogs is recreated each render but only needs to fire on campaignId change.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [campaignId]);
 
     const fetchLogs = async () => {

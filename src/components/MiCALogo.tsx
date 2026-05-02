@@ -66,6 +66,8 @@ export default function MiCALogo({ variant = 'hero', static: isStatic = false }:
     // First expansion after 3s
     tOut = setTimeout(cycle, 3000);
     return () => clearTimeout(tOut);
+    // isStatic is read at top of effect and treated as stable (set on mount).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   const isHeader = variant === 'header';

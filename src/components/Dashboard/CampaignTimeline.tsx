@@ -56,6 +56,8 @@ function useTypewriter(text: string, typeSpeed = 75, eraseSpeed = 45, holdMs = 1
         };
         tick();
         return () => clearTimeout(timeout);
+        // typeSpeed/eraseSpeed/holdMs are config knobs only read on first run; restarting on each change would cause flicker.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [text]);
     return displayed;
 }
@@ -130,6 +132,8 @@ export const CampaignTimeline: React.FC<CampaignTimelineProps> = ({ campaignId, 
                 .subscribe();
             return () => { clearInterval(pollInterval); supabase.removeChannel(channel); };
         }
+        // fetchSchedule is recreated each render but only needs to fire on campaignId change.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [campaignId]);
 
     const fetchSchedule = async (silent = false) => {

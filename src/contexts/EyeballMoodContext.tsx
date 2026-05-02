@@ -42,6 +42,7 @@ export function EyeballMoodProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useEyeballMood() {
   const ctx = useContext(EyeballMoodContext);
   if (!ctx) throw new Error('useEyeballMood must be used within EyeballMoodProvider');

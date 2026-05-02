@@ -23,7 +23,7 @@ function extractJson(response: string): string {
 
 // Repair JSON that contains HTML with double-quoted attributes inside string values.
 // The LLM often writes style="..." inside a JSON string, breaking the outer quotes.
-function parseJsonWithHtml(jsonStr: string): any {
+function parseJsonWithHtml(jsonStr: string): unknown {
     try {
         return JSON.parse(jsonStr);
     } catch {
@@ -47,8 +47,39 @@ interface Campaign {
     budget: number;
     recommended_channels: string[];
     creator_name?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+    location?: string;
+    launch_date?: string;
+    product_document_url?: string;
+    // Allow extra Supabase-row fields not modelled here.
+    [key: string]: unknown;
+}
+
+interface Stage {
+    stage_name: string;
+    day_range?: [number, number];
+    purpose: string;
+    content_direction: string;
+}
+
+interface ChannelPlan {
+    total_count?: number;
+    stages?: Stage[];
+    content_mix?: Record<string, number>;
+    audience_context?: string;
+}
+
+interface Strategy {
+    campaign_name?: string;
+    strategy_summary?: string;
+    target_persona?: string | { description?: string };
+    methodology?: { name?: string; reasoning?: string };
+    key_messages?: string[];
+    channel_plan?: {
+        email?: ChannelPlan;
+        whatsapp?: ChannelPlan;
+        instagram?: ChannelPlan;
+    };
+    [key: string]: unknown;
 }
 
 const STEPS = [
@@ -111,7 +142,7 @@ export const GeneratingCampaign: React.FC = () => {
 
         // DEMO MODE CHECK
         if (DEMO_MODE_ENABLED()) {
-            setCampaign(DEMO_CAMPAIGN as any);
+            setCampaign(DEMO_CAMPAIGN as unknown as Campaign);
             if (!generationStartedRef.current) {
                 simulateGeneration();
             }
@@ -240,7 +271,7 @@ export const GeneratingCampaign: React.FC = () => {
         // 3. Calculate campaign duration from launch date
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const launchDate = new Date(campaignData.launch_date);
+        const launchDate = new Date(campaignData.launch_date || Date.now());
         launchDate.setHours(0, 0, 0, 0);
         const diffDays = Math.ceil((launchDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
         const campaignDuration = Math.min(45, Math.max(1, diffDays));
@@ -313,9 +344,9 @@ export const GeneratingCampaign: React.FC = () => {
                 navigate(`/campaign/${campaignData.id}/dashboard`);
             }, 800);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Generation Sequence Error:", err);
-            setError(err.message || "An error occurred during generation. Please try again.");
+            setError(err instanceof Error ? err.message : "An error occurred during generation. Please try again.");
             generationStartedRef.current = false; // Allow retry
         }
     };
@@ -442,7 +473,7 @@ Return ONLY valid JSON. No markdown, no code fences, no preamble.`;
     };
 
     // --- API CALL 2: EMAILS ---
-    const generateEmails = async (campaignData: Campaign, strategy: any, context: CampaignContext) => {
+    const generateEmails = async (campaignData: Campaign, strategy: Strategy, context: CampaignContext) => {
         const toneDescription = campaignData.tone === 'Custom'
             ? `Custom — ${campaignData.tone_custom_words}`
             : campaignData.tone;
@@ -451,7 +482,7 @@ Return ONLY valid JSON. No markdown, no code fences, no preamble.`;
         const emailPlan = strategy.channel_plan?.email;
         const emailCount = emailPlan?.total_count || 5;
         const emailStages = emailPlan?.stages
-            ? `\n\nJOURNEY STAGES (follow this sequence):\n${emailPlan.stages.map((s: any) => `- ${s.stage_name} (Days ${s.day_range?.[0]}-${s.day_range?.[1]}): ${s.purpose}. Content direction: ${s.content_direction}`).join('\n')}`
+            ? `\n\nJOURNEY STAGES (follow this sequence):\n${emailPlan.stages.map((s: Stage) => `- ${s.stage_name} (Days ${s.day_range?.[0]}-${s.day_range?.[1]}): ${s.purpose}. Content direction: ${s.content_direction}`).join('\n')}`
             : '';
 
         const productKnowledge = context.productDocContent
@@ -503,9 +534,9 @@ Rules:
 CRITICAL JSON RULE: The body field contains HTML. ALL HTML attribute values MUST use single quotes (') — never double quotes ("). Example: style='color:red' and href='https://...' — not style="color:red". Double quotes inside a JSON string break the JSON.`;
 
         const response = await callAI({ systemPrompt, userPrompt: prompt, temperature: 0.7, maxTokens: 10000 });
-        const emailsJson = parseJsonWithHtml(extractJson(response));
+        const emailsJson = parseJsonWithHtml(extractJson(response)) as { emails: Record<string, unknown>[] };
 
-        const emailsToInsert = emailsJson.emails.map((e: any) => ({
+        const emailsToInsert = emailsJson.emails.map((e) => ({
             campaign_id: campaignData.id,
             ...e
         }));
@@ -515,7 +546,7 @@ CRITICAL JSON RULE: The body field contains HTML. ALL HTML attribute values MUST
     };
 
     // --- API CALL 3: CONTENT (WhatsApp + Instagram) ---
-    const generateContent = async (campaignData: Campaign, strategy: any, context: CampaignContext) => {
+    const generateContent = async (campaignData: Campaign, strategy: Strategy, context: CampaignContext) => {
         const toneDescription = campaignData.tone === 'Custom'
             ? `Custom — ${campaignData.tone_custom_words}`
             : campaignData.tone;
@@ -529,7 +560,7 @@ CRITICAL JSON RULE: The body field contains HTML. ALL HTML attribute values MUST
             const waPlan = strategy.channel_plan?.whatsapp;
             const waCount = waPlan?.total_count || 8;
             const waStages = waPlan?.stages
-                ? `\n\nJOURNEY STAGES (follow this sequence):\n${waPlan.stages.map((s: any) => `- ${s.stage_name} (Days ${s.day_range?.[0]}-${s.day_range?.[1]}): ${s.purpose}. Direction: ${s.content_direction}`).join('\n')}`
+                ? `\n\nJOURNEY STAGES (follow this sequence):\n${waPlan.stages.map((s: Stage) => `- ${s.stage_name} (Days ${s.day_range?.[0]}-${s.day_range?.[1]}): ${s.purpose}. Direction: ${s.content_direction}`).join('\n')}`
                 : '';
 
             const waPrompt = `Generate ${waCount} complete WhatsApp messages for a ${context.campaignDuration}-day marketing campaign. Each message must be a COMPLETE, ready-to-send WhatsApp message — personal, conversational, and action-oriented.
@@ -566,10 +597,10 @@ Content Rules:
                 temperature: 0.8,
                 maxTokens: 8000
             });
-            const waJson = JSON.parse(waResponse.replace(/```json\n?|\n?```/g, '').trim());
+            const waJson = JSON.parse(waResponse.replace(/```json\n?|\n?```/g, '').trim()) as { whatsapp_messages?: Record<string, unknown>[] };
 
-            if (waJson.whatsapp_messages?.length > 0) {
-                const waToInsert = waJson.whatsapp_messages.map((m: any) => ({
+            if (waJson.whatsapp_messages && waJson.whatsapp_messages.length > 0) {
+                const waToInsert = waJson.whatsapp_messages.map((m) => ({
                     campaign_id: campaignData.id,
                     ...m
                 }));
@@ -584,7 +615,7 @@ Content Rules:
             // Guardrail: 5-15 posts
             const igCount = Math.min(15, Math.max(5, igPlan?.total_count || 10));
             const igStages = igPlan?.stages
-                ? `\n\nJOURNEY STAGES:\n${igPlan.stages.map((s: any) => `- ${s.stage_name} (Days ${s.day_range?.[0]}-${s.day_range?.[1]}): ${s.purpose}. Direction: ${s.content_direction}`).join('\n')}`
+                ? `\n\nJOURNEY STAGES:\n${igPlan.stages.map((s: Stage) => `- ${s.stage_name} (Days ${s.day_range?.[0]}-${s.day_range?.[1]}): ${s.purpose}. Direction: ${s.content_direction}`).join('\n')}`
                 : '';
             const contentMix = igPlan?.content_mix
                 ? `\n\nCONTENT MIX (follow this distribution):\n${Object.entries(igPlan.content_mix).map(([type, count]) => `- ${type}: ${count} posts`).join('\n')}`
@@ -623,10 +654,10 @@ Content Rules:
                 temperature: 0.8,
                 maxTokens: 8000
             });
-            const socialJson = JSON.parse(socialResponse.replace(/```json\n?|\n?```/g, '').trim());
+            const socialJson = JSON.parse(socialResponse.replace(/```json\n?|\n?```/g, '').trim()) as { social_posts?: Record<string, unknown>[] };
 
-            if (socialJson.social_posts?.length > 0) {
-                const postsToInsert = socialJson.social_posts.map((p: any) => ({
+            if (socialJson.social_posts && socialJson.social_posts.length > 0) {
+                const postsToInsert = socialJson.social_posts.map((p) => ({
                     campaign_id: campaignData.id,
                     ...p,
                     platform: 'instagram'
@@ -688,7 +719,7 @@ Content Rules:
     };
 
     // --- API CALL 5: VIDEO SCRIPT ---
-    const generateVideoScript = async (campaignData: Campaign, strategy: any) => {
+    const generateVideoScript = async (campaignData: Campaign, strategy: Strategy) => {
         const creatorName = campaignData.creator_name || 'Business Owner';
 
         const userPrompt = `CONTEXT:
@@ -818,7 +849,7 @@ Return ONLY valid JSON in this format:
     };
 
     // --- API CALL 7: FINALIZE ---
-    const finalizeCampaign = async (campaignId: string, _strategy: any) => {
+    const finalizeCampaign = async (campaignId: string, _strategy: Strategy) => {
         await supabase.from('campaigns').update({ status: 'plan_ready' }).eq('id', campaignId);
     };
 
