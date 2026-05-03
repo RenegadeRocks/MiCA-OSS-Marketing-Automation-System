@@ -15,6 +15,22 @@ MiCA is an open-source marketing automation tool built using AI. It uses APIs of
 
 ---
 
+## A look at MiCA
+
+![MiCA landing page](./docs/screenshots/01-landing-hero.png)
+*The landing page — describe your business, get a complete campaign in five minutes.*
+
+![Campaign dashboard with HeyGen avatar video](./docs/screenshots/03-dashboard-overview.png)
+*The dashboard — a HeyGen avatar introduces your campaign, the strategy is laid out (methodology, duration, budget), and one click launches across channels.*
+
+![Instagram posts with AI-generated images](./docs/screenshots/04-dashboard-instagram.png)
+*Instagram tab — AI-generated post images, captions, and hashtags scheduled across the campaign.*
+
+![Email composition view](./docs/screenshots/05-dashboard-emails.png)
+*Emails tab — full email body with subject, preheader, and CTA, ready to send-test or export.*
+
+---
+
 ## Try it without setup (Demo Mode)
 
 The fastest way to see what MiCA does — no API keys, no Supabase, no signup.
