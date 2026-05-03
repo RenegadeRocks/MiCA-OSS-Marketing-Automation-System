@@ -26,8 +26,8 @@ MiCA is an open-source marketing automation tool built using AI. It uses APIs of
 ![Instagram posts with AI-generated images](./docs/screenshots/04-dashboard-instagram.png)
 *Instagram tab — AI-generated post images, captions, and hashtags scheduled across the campaign.*
 
-![Email composition view](./docs/screenshots/05-dashboard-emails.png)
-*Emails tab — full email body with subject, preheader, and CTA, ready to send-test or export.*
+![WhatsApp messages view](./docs/screenshots/05-dashboard-whatsapp.png)
+*WhatsApp tab — campaign messages drafted in conversational tone with day-by-day scheduling, ready to send-test or export.*
 
 ---
 
