@@ -35,6 +35,8 @@ MiCA is an open-source marketing automation tool built using AI. It uses APIs of
 
 The fastest way to see what MiCA does — no API keys, no Supabase, no signup.
 
+**Prerequisites:** Node.js 20 or newer ([download](https://nodejs.org/)). Check with `node -v`.
+
 ```bash
 git clone https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System.git mica
 cd mica
@@ -42,7 +44,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`, click the **"Demo Mode"** toggle in the bottom-left corner, then click **Create Campaign**. The DoodleMap walks you through the prompts (type any text — it's a demo); the dashboard shows a real campaign generated for the Happiness Program by Art of Living, including a HeyGen avatar video, social posts, email sequences, and WhatsApp drafts.
+Open `http://localhost:5173`, click the **"Demo Mode"** toggle in the bottom-left corner, then click **Create Campaign**. *(If port 5173 is already in use, Vite picks the next available port — check the terminal output for the actual URL.)* The DoodleMap walks you through the prompts (type any text — it's a demo); the dashboard shows a real campaign generated for the Happiness Program by Art of Living, including a HeyGen avatar video, social posts, email sequences, and WhatsApp drafts.
 
 Demo mode bundles all the assets locally — works offline, no internet required after `npm install`.
 
@@ -186,6 +188,12 @@ MiCA was built during the AI Generalist Fellowship by [Outskill](https://outskil
 - **Rushin Savani**
 - **Sachin Sablok**
 - **Aditya Ashutosh Panda**
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for the full release history (v0.1.0 onward).
 
 ---
 

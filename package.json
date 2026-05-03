@@ -1,7 +1,10 @@
 {
   "name": "mica-marketing-automation",
   "private": false,
-  "version": "0.1.6",
+  "version": "0.1.7",
+  "engines": {
+    "node": ">=20"
+  },
   "description": "Open-source AI marketing campaign automation: describe your business once, get a complete cross-channel campaign (email, WhatsApp, Instagram, AI-avatar video) in five minutes.",
   "license": "MIT",
   "homepage": "https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System#readme",
