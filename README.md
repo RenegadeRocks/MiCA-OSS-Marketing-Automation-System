@@ -1,15 +1,15 @@
 # MiCA — AI Marketing Campaign Automation
 
-> Describe your business once. Get a complete cross-channel marketing campaign — emails, WhatsApp messages, Instagram posts, and an AI-avatar launch video — in five minutes.
+> Fill a small form-> Get a complete cross-channel marketing campaign — emails, WhatsApp messages, Instagram posts — in five minutes. All assets can be saved in one click.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Built with Vite](https://img.shields.io/badge/Vite-7-646cff.svg)](https://vitejs.dev/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](https://www.typescriptlang.org/)
 
-MiCA is an open-source marketing automation tool built on top of OpenRouter (text), Replicate (images), and HeyGen (avatar video). You give it a paragraph about your business; it builds a 4–6 week campaign across email, WhatsApp, and Instagram, complete with a personalized launch video.
+MiCA is an open-source marketing automation tool built using AI. It uses APIs of OpenRouter (text), Replicate (images), and HeyGen (avatar video). You give it a paragraph about your business; it builds a 4–6 week extensive campaign across email, WhatsApp, and Instagram, complete with a video that explains that marketing campign in simple words.
 
-> 🏆 Winners of Cohort 5 of the [AI Generalist Fellowship by Outskill](https://outskill.com) (Demo Day: 28 March 2026). Built by Satbir Singh, Sumanth Krishna, Rushin Savani, Sachin Sablok, and Aditya Ashutosh Panda — released to the community as MIT-licensed software.
+> 🏆 First Prize Winners of Cohort 5 of the [AI Generalist Fellowship by Outskill](https://outskill.com) (Demo Day: 28 March 2026). Built by Satbir Singh, Sumanth Krishna, Rushin Savani, Sachin Sablok, and Aditya Ashutosh Panda — released to the community as MIT-licensed software.
 
 > ⚠️ **Deployment scope.** MiCA is designed for **self-hosted or trusted single-user use**. In the current architecture, provider API keys (OpenRouter, Replicate, HeyGen) are read in the browser and called directly from the client — this is fine for personal use, internal tools, or a small trusted team, but **don't expose this app publicly without putting the AI calls behind your own server**. See [Limitations and roadmap](#limitations-and-roadmap) below.
 
