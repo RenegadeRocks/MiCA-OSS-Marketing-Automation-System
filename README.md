@@ -38,7 +38,7 @@ The fastest way to see what MiCA does — no API keys, no Supabase, no signup.
 **Prerequisites:** Node.js 20 or newer ([download](https://nodejs.org/)). Check with `node -v`.
 
 ```bash
-git clone https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System.git mica
+git clone https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System.git mica
 cd mica
 npm install
 npm run dev
