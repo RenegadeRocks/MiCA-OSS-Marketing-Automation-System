@@ -8,7 +8,7 @@ import EyeCharacter from './EyeCharacter';
  * to reveal the acronym:
  *   M = Marketing
  *   i = intelligence
- *   C = Creative
+ *   C = Campaign
  *   A = Automation
  */
 
@@ -21,7 +21,7 @@ interface LetterDef {
 const LETTERS: LetterDef[] = [
   { char: 'M', fullWord: 'arketing' },
   { char: 'i', fullWord: 'ntelligence', isLowercase: true },
-  { char: 'C', fullWord: 'reative' },
+  { char: 'C', fullWord: 'ampaign' },
   { char: 'A', fullWord: 'utomation' },
 ];
 
