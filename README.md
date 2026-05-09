@@ -25,7 +25,8 @@ MiCA is an open-source marketing automation tool: Give it a description about yo
 
 <img width="2038" height="1196" alt="Screenshot 2026-05-09 at 12 38 16 PM" src="https://github.com/user-attachments/assets/ddb0498e-4422-40be-a611-496d2c6beeb1" />
 
-<img width="2052" height="1222" alt="Screenshot 2026-05-09 at 12 38 56 PM" src="https://github.com/user-attachments/assets/8cb3e95f-ec0b-4801-bb64-2597f86facd3" />
+<img width="2050" height="1184" alt="20455771-B0EB-431F-B40F-0180D968CF15_1_201_a" src="https://github.com/user-attachments/assets/4d4b9541-71d0-4487-8877-4c5c7309e333" />
+
 
 
 
