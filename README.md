@@ -2,6 +2,7 @@
 
 > Fill a short form-> Get a complete cross-channel professional marketing campaign and all assets for — emails, WhatsApp messages, Instagram posts — in five minutes. All assets can be saved in one click.
 
+[![Live demo](https://img.shields.io/badge/Live_demo-mica--oss.netlify.app-FF7A00.svg)](https://mica-oss.netlify.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Built with Vite](https://img.shields.io/badge/Vite-7-646cff.svg)](https://vitejs.dev/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
@@ -41,6 +42,12 @@ MiCA is an open-source marketing automation tool: give it a description of your 
 
 The fastest way to see what MiCA does — no API keys, no Supabase, no signup.
 
+### Option A — Hosted demo (zero setup)
+
+👉 **[mica-oss.netlify.app](https://mica-oss.netlify.app/)** — click around in the browser. Demo mode is pre-enabled; the dashboard shows a real campaign for the Happiness Program by Art of Living, including a HeyGen avatar video, Instagram posts, email sequences, and WhatsApp drafts. No account needed.
+
+### Option B — Run it locally
+
 **Prerequisites:** Node.js 20 or newer ([download](https://nodejs.org/)). Check with `node -v`.
 
 ```bash
@@ -50,7 +57,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`, click the **"Demo Mode"** toggle in the bottom-left corner, then click **Create Campaign**. *(If port 5173 is already in use, Vite picks the next available port — check the terminal output for the actual URL.)* The DoodleMap walks you through the prompts (type any text — it's a demo); the dashboard shows a real campaign generated for the Happiness Program by Art of Living, including a HeyGen avatar video, social posts, email sequences, and WhatsApp drafts.
+Open `http://localhost:5173`, click the **"Demo Mode"** toggle in the bottom-left corner, then click **Create Campaign**. *(If port 5173 is already in use, Vite picks the next available port — check the terminal output for the actual URL.)* The DoodleMap walks you through the prompts (type any text — it's a demo).
 
 Demo mode bundles all the assets locally — works offline, no internet required after `npm install`.
 
