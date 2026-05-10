@@ -9,7 +9,7 @@
 
 > 🏆 First Prize Winners of Cohort 5 of the [AI Generalist Fellowship by Outskill](https://outskill.com) (Demo Day: 28 March 2026). Built by Satbir Singh, Sumanth Krishna, Rushin Savani, Sachin Sablok, and Aditya Ashutosh Panda — released to the community as MIT-licensed software.
 
-MiCA is an open-source marketing automation tool: Give it a description about your workshop/business/propduct; it chooses a proven marketing strategy o maximise effect, builds a 1 to 45 days ultra detailed marketing campaign and distribution plan across email, WhatsApp, and Instagram, complete with a video that explains that marketing campign in simple words. the campaign and assets can all be downloaded in one click as a pdf. It uses APIs of OpenRouter (text), Replicate (images) to create all the marketing assets and HeyGen (overview video) to create an explainer video. 
+MiCA is an open-source marketing automation tool: give it a description of your workshop, business, or product; it chooses a proven marketing strategy to maximise effect, then builds a 1-to-45-day ultra-detailed marketing campaign and distribution plan across email, WhatsApp, and Instagram, complete with a video that explains the campaign in simple words. The campaign and all assets can be downloaded in one click as a PDF. MiCA uses OpenRouter (text) and Replicate (images) to create the marketing assets, and HeyGen to generate the avatar explainer video.
 
 > ⚠️ **Deployment scope.** MiCA is designed for **self-hosted or trusted single-user use**. In the current architecture, provider API keys (OpenRouter, Replicate, HeyGen) are read in the browser and called directly from the client — this is fine for personal use, internal tools, or a small trusted team, but **don't expose this app publicly without putting the AI calls behind your own server**. See [Limitations and roadmap](#limitations-and-roadmap) below.
 
@@ -23,12 +23,11 @@ MiCA is an open-source marketing automation tool: Give it a description about yo
 ![Campaign dashboard with HeyGen avatar video](./docs/screenshots/03-dashboard-overview.png)
 *The dashboard — a HeyGen avatar introduces your campaign, the strategy is laid out (methodology, duration, budget), and one click launches across channels.*
 
-<img width="2038" height="1196" alt="Screenshot 2026-05-09 at 12 38 16 PM" src="https://github.com/user-attachments/assets/ddb0498e-4422-40be-a611-496d2c6beeb1" />
+![Dashboard strategy panel — Target Persona and Chosen Methodology](./docs/screenshots/02-dashboard-strategy.png)
+*Strategy panel — MiCA picks a proven marketing framework (PAS, AIDA, etc.) for the business, defines the target persona with pain points, and explains why this approach fits.*
 
-<img width="2050" height="1184" alt="20455771-B0EB-431F-B40F-0180D968CF15_1_201_a" src="https://github.com/user-attachments/assets/4d4b9541-71d0-4487-8877-4c5c7309e333" />
-
-
-
+![Campaign timeline — week-by-week message and post schedule](./docs/screenshots/06-campaign-timeline.jpg)
+*Campaign timeline — every email, WhatsApp message, and Instagram post scheduled by day with subject lines and content previews.*
 
 ![Instagram posts with AI-generated images](./docs/screenshots/04-dashboard-instagram.png)
 *Instagram tab — AI-generated post images, captions, and hashtags scheduled across the campaign.*
@@ -182,7 +181,7 @@ mica/
 
 PRs welcome — especially for: improved demo data, new tone-of-voice presets, better AI prompts, and translations.
 
-Open an [issue](https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/issues) for bugs, feature requests, or questions. Discussion before large PRs is appreciated.
+Open an [issue](https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/issues) for bugs, feature requests, or questions. Discussion before large PRs is appreciated.
 
 ---
 

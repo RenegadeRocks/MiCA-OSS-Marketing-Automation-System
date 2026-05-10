@@ -91,11 +91,11 @@ First public release after winning Cohort 5 of the [AI Generalist Fellowship by 
 - AI providers: OpenRouter (text), Replicate (images), HeyGen (avatar video).
 - Self-hosted single-user deployment model — provider keys are read in the browser.
 
-[0.1.7]: https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.7
-[0.1.6]: https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.6
-[0.1.5]: https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.5
-[0.1.4]: https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.4
-[0.1.3]: https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.3
-[0.1.2]: https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.2
-[0.1.1]: https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.1
-[0.1.0]: https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.0
+[0.1.7]: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.7
+[0.1.6]: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.6
+[0.1.5]: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.5
+[0.1.4]: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.4
+[0.1.3]: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.3
+[0.1.2]: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.2
+[0.1.1]: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.1
+[0.1.0]: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/releases/tag/v0.1.0
