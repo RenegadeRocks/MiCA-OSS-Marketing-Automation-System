@@ -4,7 +4,7 @@ import { Sparkles, CheckCircle2, Circle, AlertCircle, Loader2 } from 'lucide-rea
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
 import { Layout } from '../../components/Layout';
-import { callAI } from '../../services/aiService';
+import { callAIStructured } from '../../services/aiService';
 import { generateImage } from '../../services/imageService';
 import { buildImagePrompt } from '../../services/imagePromptBuilder';
 import { startVideo } from '../../services/videoService';
@@ -12,30 +12,6 @@ import { HEYGEN_CONFIG } from '../../config/heygen';
 import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN } from '../../data/demoData';
 import MiCALogo from '../../components/MiCALogo';
 import { useAnimationContext } from '../../context/AnimationContext';
-
-function extractJson(response: string): string {
-    const cleaned = response.replace(/```json\n?|\n?```/g, '').replace(/```\n?|\n?```/g, '').trim();
-    const start = cleaned.indexOf('{');
-    const end = cleaned.lastIndexOf('}');
-    if (start !== -1 && end !== -1 && end > start) return cleaned.slice(start, end + 1);
-    return cleaned;
-}
-
-// Repair JSON that contains HTML with double-quoted attributes inside string values.
-// The LLM often writes style="..." inside a JSON string, breaking the outer quotes.
-function parseJsonWithHtml(jsonStr: string): unknown {
-    try {
-        return JSON.parse(jsonStr);
-    } catch {
-        // Replace double-quoted HTML attribute values with single-quoted ones.
-        // Targets the most common HTML attributes that trigger this issue.
-        const repaired = jsonStr.replace(
-            /(href|src|style|class|id|type|target|rel|width|height|align|valign|bgcolor|border|cellpadding|cellspacing)="([^"]*)"/g,
-            "$1='$2'"
-        );
-        return JSON.parse(repaired);
-    }
-}
 
 interface Campaign {
     id: string;
@@ -460,12 +436,34 @@ ${contactInfo}
 
 You DO NOT use templates. You ANALYZE each product deeply and CHOOSE the optimal strategy.
 
-BE CONCISE. Every field in the JSON should be clear and precise — not verbose. String values should be 1-3 sentences max. The weekly_plan tactics should be brief action descriptions, not essays. Clarity over length.
+BE CONCISE. Every field in the JSON should be clear and precise — not verbose. String values should be 1-3 sentences max. The weekly_plan tactics should be brief action descriptions, not essays. Clarity over length.`;
 
-Return ONLY valid JSON. No markdown, no code fences, no preamble.`;
-
-        const response = await callAI({ systemPrompt, userPrompt: prompt, temperature: 0.7, maxTokens: 10000 });
-        const strategyJson = JSON.parse(extractJson(response));
+        const strategyJson = await callAIStructured<Strategy>({
+            systemPrompt,
+            userPrompt: prompt,
+            temperature: 0.7,
+            maxTokens: 10000,
+            schemaName: "save_marketing_strategy",
+            schemaDescription: "Save the marketing strategy plan for the campaign.",
+            schema: {
+                type: "object",
+                required: ["campaign_name", "methodology", "strategy_summary", "key_messages", "channel_plan", "weekly_plan"],
+                properties: {
+                    campaign_name: { type: "string" },
+                    methodology: { type: "object", additionalProperties: true },
+                    campaign_duration_days: { type: "number" },
+                    strategy_summary: { type: "string" },
+                    target_persona: { type: "object", additionalProperties: true },
+                    key_messages: { type: "array", items: { type: "string" } },
+                    channel_plan: { type: "object", additionalProperties: true },
+                    budget_allocation: { type: "object", additionalProperties: true },
+                    weekly_plan: { type: "array", items: { type: "object", additionalProperties: true } },
+                    expected_outcomes: { type: "object", additionalProperties: true },
+                    no_contact_data_notice: { type: "string" }
+                },
+                additionalProperties: true
+            }
+        });
 
         // Save strategy to DB
         await supabase.from('campaigns').update({ marketing_plan: strategyJson }).eq('id', campaignData.id);
@@ -512,7 +510,7 @@ Output JSON format:
       "template_order": 1,
       "subject": "string — compelling subject line (max 60 chars)",
       "pre_header": "string — preview text that complements the subject (max 90 chars)",
-      "body": "string — complete HTML email body. IMPORTANT: ALL HTML attributes must use single quotes — style='...' and href='...' not double quotes. Structure: (1) greeting with {{first_name}}, (2) 2-3 paragraphs of engaging content using <p>, <strong>, <ul>, <li> tags, (3) REQUIRED: end with a styled CTA button using this exact HTML pattern: <a href='LINK_HERE' style='background-color:#F59E0B;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;margin-top:16px;'>CTA_TEXT →</a> — for LINK_HERE: scan the PRODUCT DESCRIPTION and PRODUCT DOCUMENT for any registration URL, website link, or product page link and use it directly; if no link is found use {{cta_link}} as the placeholder. Write in the exact campaign tone. Use ₹ for currency. Aim for 200-300 words.",
+      "body": "string — complete HTML email body. Structure: (1) greeting with {{first_name}}, (2) 2-3 paragraphs of engaging content using <p>, <strong>, <ul>, <li> tags, (3) REQUIRED: end with a styled CTA button using this exact HTML pattern: <a href='LINK_HERE' style='background-color:#F59E0B;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;margin-top:16px;'>CTA_TEXT →</a> — for LINK_HERE: scan the PRODUCT DESCRIPTION and PRODUCT DOCUMENT for any registration URL, website link, or product page link and use it directly; if no link is found use {{cta_link}} as the placeholder. Write in the exact campaign tone. Use ₹ for currency. Aim for 200-300 words.",
       "cta_text": "string — clear, action-oriented call-to-action button text (max 5 words)",
       "scheduled_day": 1
     }
@@ -529,12 +527,37 @@ Rules:
 - NEVER mention or invent a product price/cost. The marketing budget is NOT the product's price. Only mention pricing if specific pricing info appears in the PRODUCT DESCRIPTION above.
 - NEVER fabricate statistics, testimonials, or specific numbers. Only use factual claims from the PRODUCT DESCRIPTION.`;
 
-        const systemPrompt = `You are MiCA, an expert AI marketing email copywriter specializing in campaigns for small businesses and entrepreneurs in India. You write complete, high-converting marketing emails that match the requested tone exactly. Keep emails focused and readable — 200-300 words in the body, no padding. You follow the campaign's chosen marketing methodology to structure the email sequence as a deliberate journey. Return ONLY valid JSON. No markdown, no preamble.
+        const systemPrompt = `You are MiCA, an expert AI marketing email copywriter specializing in campaigns for small businesses and entrepreneurs in India. You write complete, high-converting marketing emails that match the requested tone exactly. Keep emails focused and readable — 200-300 words in the body, no padding. You follow the campaign's chosen marketing methodology to structure the email sequence as a deliberate journey.`;
 
-CRITICAL JSON RULE: The body field contains HTML. ALL HTML attribute values MUST use single quotes (') — never double quotes ("). Example: style='color:red' and href='https://...' — not style="color:red". Double quotes inside a JSON string break the JSON.`;
-
-        const response = await callAI({ systemPrompt, userPrompt: prompt, temperature: 0.7, maxTokens: 10000 });
-        const emailsJson = parseJsonWithHtml(extractJson(response)) as { emails: Record<string, unknown>[] };
+        const emailsJson = await callAIStructured<{ emails: Record<string, unknown>[] }>({
+            systemPrompt,
+            userPrompt: prompt,
+            temperature: 0.7,
+            maxTokens: 10000,
+            schemaName: "save_email_templates",
+            schemaDescription: "Save the generated marketing email templates.",
+            schema: {
+                type: "object",
+                required: ["emails"],
+                properties: {
+                    emails: {
+                        type: "array",
+                        items: {
+                            type: "object",
+                            required: ["template_order", "subject", "pre_header", "body", "cta_text", "scheduled_day"],
+                            properties: {
+                                template_order: { type: "number" },
+                                subject: { type: "string" },
+                                pre_header: { type: "string" },
+                                body: { type: "string", description: "Complete HTML email body." },
+                                cta_text: { type: "string" },
+                                scheduled_day: { type: "number" }
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         const emailsToInsert = emailsJson.emails.map((e) => ({
             campaign_id: campaignData.id,
@@ -591,13 +614,33 @@ Content Rules:
 - NEVER mention or invent a product price/cost. Only mention pricing if in the PRODUCT DESCRIPTION.
 - NEVER fabricate statistics or testimonials. Only use facts from the PRODUCT DESCRIPTION.`;
 
-            const waResponse = await callAI({
-                systemPrompt: `You are MiCA, an expert WhatsApp marketing copywriter for Indian small businesses. You write messages that feel personal and human — like they come from a trusted local business. Your messages follow a deliberate journey based on the campaign's marketing methodology. Conversational, warm, culturally relevant to India. Return ONLY valid JSON. No markdown, no preamble.`,
+            const waJson = await callAIStructured<{ whatsapp_messages?: Record<string, unknown>[] }>({
+                systemPrompt: `You are MiCA, an expert WhatsApp marketing copywriter for Indian small businesses. You write messages that feel personal and human — like they come from a trusted local business. Your messages follow a deliberate journey based on the campaign's marketing methodology. Conversational, warm, culturally relevant to India.`,
                 userPrompt: waPrompt,
                 temperature: 0.8,
-                maxTokens: 8000
+                maxTokens: 8000,
+                schemaName: "save_whatsapp_messages",
+                schemaDescription: "Save the generated WhatsApp messages for the campaign.",
+                schema: {
+                    type: "object",
+                    required: ["whatsapp_messages"],
+                    properties: {
+                        whatsapp_messages: {
+                            type: "array",
+                            items: {
+                                type: "object",
+                                required: ["message_order", "message_text", "message_type", "scheduled_day"],
+                                properties: {
+                                    message_order: { type: "number" },
+                                    message_text: { type: "string" },
+                                    message_type: { type: "string" },
+                                    scheduled_day: { type: "number" }
+                                }
+                            }
+                        }
+                    }
+                }
             });
-            const waJson = JSON.parse(waResponse.replace(/```json\n?|\n?```/g, '').trim()) as { whatsapp_messages?: Record<string, unknown>[] };
 
             if (waJson.whatsapp_messages && waJson.whatsapp_messages.length > 0) {
                 const waToInsert = waJson.whatsapp_messages.map((m) => ({
@@ -648,13 +691,34 @@ Content Rules:
 - NEVER mention or invent a product price/cost. Only mention pricing if in the PRODUCT DESCRIPTION.
 - NEVER fabricate statistics or testimonials. Only use facts from the PRODUCT DESCRIPTION.`;
 
-            const socialResponse = await callAI({
-                systemPrompt: `You are MiCA, an expert Instagram content strategist for Indian small businesses. You create scroll-stopping captions that build genuine connection and drive action. Each post stands alone. Be CONCISE — captions must be short and punchy (60-90 words max). Busy, stressed people do not read long posts. Every word must earn its place. Return ONLY valid JSON. No markdown, no preamble.`,
+            const socialJson = await callAIStructured<{ social_posts?: Record<string, unknown>[] }>({
+                systemPrompt: `You are MiCA, an expert Instagram content strategist for Indian small businesses. You create scroll-stopping captions that build genuine connection and drive action. Each post stands alone. Be CONCISE — captions must be short and punchy (60-90 words max). Busy, stressed people do not read long posts. Every word must earn its place.`,
                 userPrompt: socialPrompt,
                 temperature: 0.8,
-                maxTokens: 8000
+                maxTokens: 8000,
+                schemaName: "save_social_posts",
+                schemaDescription: "Save the generated Instagram posts for the campaign.",
+                schema: {
+                    type: "object",
+                    required: ["social_posts"],
+                    properties: {
+                        social_posts: {
+                            type: "array",
+                            items: {
+                                type: "object",
+                                required: ["post_order", "caption", "hashtags", "scheduled_day", "image_suggestion"],
+                                properties: {
+                                    post_order: { type: "number" },
+                                    caption: { type: "string" },
+                                    hashtags: { type: "string" },
+                                    scheduled_day: { type: "number" },
+                                    image_suggestion: { type: "string" }
+                                }
+                            }
+                        }
+                    }
+                }
             });
-            const socialJson = JSON.parse(socialResponse.replace(/```json\n?|\n?```/g, '').trim()) as { social_posts?: Record<string, unknown>[] };
 
             if (socialJson.social_posts && socialJson.social_posts.length > 0) {
                 const postsToInsert = socialJson.social_posts.map((p) => ({
@@ -786,21 +850,23 @@ Requirements:
 5. Duration: 60-75 seconds total.
 6. Include ALL: scene timecodes, avatar direction, visual cues, and the full VISUAL NOTES section.
 
-Return ONLY valid JSON in this format:
-{
-  "video_agent_prompt": "The entire formatted text block — including the opening 'Create a...' line, TONE line, all SCRIPT scenes with timecodes and visual directions, and the VISUAL NOTES section. This is NOT just spoken words — it is the full director's brief."
-}`;
+Return the entire formatted text block — including the opening 'Create a...' line, TONE line, all SCRIPT scenes with timecodes and visual directions, and the VISUAL NOTES section. This is NOT just spoken words — it is the full director's brief.`;
 
-        const response = await callAI({ systemPrompt, userPrompt, temperature: 0.7, maxTokens: 2000 });
-
-        let scriptJson;
-        try {
-            scriptJson = JSON.parse(extractJson(response));
-        } catch (e) {
-            console.error("JSON Parse Error in Video Script:", e);
-            console.log("Raw Response:", response);
-            scriptJson = { video_agent_prompt: response.replace(/```json\n?|\n?```/g, '').trim() };
-        }
+        const scriptJson = await callAIStructured<{ video_agent_prompt: string }>({
+            systemPrompt,
+            userPrompt,
+            temperature: 0.7,
+            maxTokens: 2000,
+            schemaName: "save_video_agent_prompt",
+            schemaDescription: "Save the full video agent director's brief.",
+            schema: {
+                type: "object",
+                required: ["video_agent_prompt"],
+                properties: {
+                    video_agent_prompt: { type: "string" }
+                }
+            }
+        });
 
         await supabase.from('campaigns').update({ video_script: scriptJson.video_agent_prompt }).eq('id', campaignData.id);
         return scriptJson.video_agent_prompt;

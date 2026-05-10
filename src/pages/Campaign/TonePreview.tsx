@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Layout } from '../../components/Layout';
-import { callAI } from '../../services/aiService';
+import { callAIStructured } from '../../services/aiService';
 import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN, DEMO_TONE_VARIANTS } from '../../data/demoData';
 
 interface Campaign {
@@ -46,25 +46,15 @@ const TONE_PREVIEW_SYSTEM_PROMPT = `You are MiCA, an expert AI marketing strateg
 
 Your task is to generate a TONE PREVIEW — 3 short samples that show the user what their marketing campaign will feel and sound like. This is NOT the full campaign. This is a quick taste so the user can approve the tone before we invest in full generation.
 
-You must respond in valid JSON format only. No markdown, no preamble, no explanation outside the JSON.
-
-Response format:
-{
-  "tone_summary": "2-3 sentences describing the overall marketing tone and approach you'll take for this campaign",
-  "sample_email": {
-    "subject": "Email subject line (max 60 chars)",
-    "opening_paragraph": "First paragraph of the email (3-4 sentences, ~80 words)"
-  },
-  "sample_social_post": {
-    "caption": "Instagram caption (150-200 words, include 3-5 relevant hashtags at the end)",
-    "post_type": "carousel | single_image | reel_script"
-  },
-  "sample_whatsapp": {
-    "message": "WhatsApp message (60-100 words, conversational, include one emoji, include a clear CTA)"
-  },
-  "recommended_channels": ["email", "whatsapp", "instagram", "voice_agent", "video_ad"],
-  "channel_reasoning": "1-2 sentences explaining why these channels were chosen based on the product type and budget"
-}
+Field guidance:
+- tone_summary: 2-3 sentences describing the overall marketing tone and approach you'll take for this campaign
+- sample_email.subject: max 60 chars
+- sample_email.opening_paragraph: 3-4 sentences, ~80 words
+- sample_social_post.caption: Instagram caption (150-200 words, include 3-5 relevant hashtags at the end)
+- sample_social_post.post_type: one of carousel | single_image | reel_script
+- sample_whatsapp.message: 60-100 words, conversational, include one emoji, include a clear CTA
+- recommended_channels: subset of [email, whatsapp, instagram, voice_agent, video_ad]
+- channel_reasoning: 1-2 sentences explaining why these channels were chosen based on the product type and budget
 
 Rules:
 - Match the requested tone EXACTLY (Professional, Warm, Urgent, Casual, or Custom)
@@ -193,24 +183,46 @@ Generate the tone preview samples now.`;
                 isRevision ? customFeedback : undefined
             );
 
-            // Call AI
-            const aiResponseString = await callAI({
+            // Call AI with structured output — guarantees valid JSON
+            const aiResponse = await callAIStructured<TonePreviewData>({
                 systemPrompt: TONE_PREVIEW_SYSTEM_PROMPT,
                 userPrompt: userPrompt,
-                temperature: 0.7
+                temperature: 0.7,
+                schemaName: "save_tone_preview",
+                schemaDescription: "Save the tone preview samples and channel recommendations.",
+                schema: {
+                    type: "object",
+                    required: ["tone_summary", "sample_email", "sample_social_post", "sample_whatsapp", "recommended_channels", "channel_reasoning"],
+                    properties: {
+                        tone_summary: { type: "string" },
+                        sample_email: {
+                            type: "object",
+                            required: ["subject", "opening_paragraph"],
+                            properties: {
+                                subject: { type: "string" },
+                                opening_paragraph: { type: "string" }
+                            }
+                        },
+                        sample_social_post: {
+                            type: "object",
+                            required: ["caption", "post_type"],
+                            properties: {
+                                caption: { type: "string" },
+                                post_type: { type: "string" }
+                            }
+                        },
+                        sample_whatsapp: {
+                            type: "object",
+                            required: ["message"],
+                            properties: {
+                                message: { type: "string" }
+                            }
+                        },
+                        recommended_channels: { type: "array", items: { type: "string" } },
+                        channel_reasoning: { type: "string" }
+                    }
+                }
             });
-
-            // Parse JSON
-            let aiResponse: TonePreviewData;
-            try {
-                // Handle potential markdown code blocks
-                const cleanJson = aiResponseString.replace(/```json\n?|\n?```/g, '').trim();
-                aiResponse = JSON.parse(cleanJson);
-            } catch (e) {
-                console.error("JSON Parse Error:", e);
-                console.log("Raw Response:", aiResponseString);
-                throw new Error("Failed to parse AI response. Please try again.");
-            }
 
             // Save to database
             const updates: Partial<Campaign> & { tone_preview_content?: TonePreviewData; recommended_channels?: string[] } = {
