@@ -50,4 +50,4 @@ Be kind. We'll close issues and reject PRs that involve harassment, discriminati
 
 ## Questions?
 
-Open a [Discussion](https://github.com/gamedesignersatbir-coder/MiCA-OSS-Marketing-Automation-System/discussions) on the repo, or email satsin20@gmail.com.
+Open a [Discussion](https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/discussions) on the repo, or email satsin20@gmail.com.

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/security/policy
+    about: Please don't file security issues publicly — see SECURITY.md for the private reporting process.
+  - name: Question or discussion
+    url: https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System/discussions
+    about: Open-ended questions, ideas, or "is this a bug?" — start a Discussion instead of an Issue.
