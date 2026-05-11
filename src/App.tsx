@@ -6,6 +6,7 @@ import { EyeballMoodProvider } from './contexts/EyeballMoodContext';
 import FloatingHeroEyeball from './components/FloatingHeroEyeball';
 import PeekingVignette from './components/PeekingVignette';
 import { DemoModeToggle } from './components/DemoModeToggle';
+import { useIsMobile } from './hooks/useIsMobile';
 import { LandingPage } from './pages/LandingPage';
 import { Login } from './pages/Auth/Login';
 import { Signup } from './pages/Auth/Signup';
@@ -37,6 +38,7 @@ function AppShell({
   setEyeVersion: (v: 'modern' | 'classic') => void;
 }) {
   const { setMode, eyeballHidden } = useAnimationContext();
+  const isMobile = useIsMobile();
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [vignetteVisible, setVignetteVisible] = useState(false);
@@ -131,16 +133,19 @@ function AppShell({
     <>
       <DemoModeToggle />
 
-      {/* The global vignette layer */}
-      <PeekingVignette
-        visible={vignetteVisible && !eyeballHidden}
-        gazeX={mousePos.x / window.innerWidth}
-        gazeY={mousePos.y / window.innerHeight}
-        version={eyeVersion}
-      />
-
-      {/* The Floating Autonomous Hero Element (Global) */}
-      <FloatingHeroEyeball onGiggle={() => triggerVignette(2500)} version={eyeVersion} />
+      {/* Eyeball mascot + peeking vignette: desktop/tablet only.
+          Hidden on phones (< 768px) where the floating elements overlap content. */}
+      {!isMobile && (
+        <>
+          <PeekingVignette
+            visible={vignetteVisible && !eyeballHidden}
+            gazeX={mousePos.x / window.innerWidth}
+            gazeY={mousePos.y / window.innerHeight}
+            version={eyeVersion}
+          />
+          <FloatingHeroEyeball onGiggle={() => triggerVignette(2500)} version={eyeVersion} />
+        </>
+      )}
 
       <Suspense fallback={<div className="flex h-screen items-center justify-center bg-gray-950"><div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" /></div>}>
         <Routes>
