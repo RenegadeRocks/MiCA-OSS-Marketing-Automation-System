@@ -10,6 +10,11 @@ export const Navbar: React.FC = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+    // Hide the Settings (API keys) entry point in demo mode — on the public
+    // demo deployment the user can't usefully paste keys; the gear icon is
+    // confusing. Local self-hosters with demo mode off still see it.
+    const isDemoMode = typeof window !== 'undefined' && localStorage.getItem('mica_demo_mode') === 'true';
+
     const handleSignOut = async () => {
         await signOut();
         navigate('/login');
@@ -26,11 +31,13 @@ export const Navbar: React.FC = () => {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-4">
-                        <Link to="/settings" aria-label="Settings">
-                            <Button variant="ghost" size="sm" className="text-gray-300">
-                                <SettingsIcon className="w-4 h-4" />
-                            </Button>
-                        </Link>
+                        {!isDemoMode && (
+                            <Link to="/settings" aria-label="Settings">
+                                <Button variant="ghost" size="sm" className="text-gray-300">
+                                    <SettingsIcon className="w-4 h-4" />
+                                </Button>
+                            </Link>
+                        )}
                         {user ? (
                             <>
                                 <div className="flex items-center space-x-2 text-gray-300 mr-4">
@@ -81,11 +88,13 @@ export const Navbar: React.FC = () => {
                             <Link to="/create-campaign" onClick={() => setIsMenuOpen(false)} className="block">
                                 <Button variant="primary" className="w-full">New Campaign</Button>
                             </Link>
-                            <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="block">
-                                <Button variant="ghost" className="w-full justify-start text-gray-300">
-                                    <SettingsIcon className="w-4 h-4 mr-2" /> Settings
-                                </Button>
-                            </Link>
+                            {!isDemoMode && (
+                                <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="block">
+                                    <Button variant="ghost" className="w-full justify-start text-gray-300">
+                                        <SettingsIcon className="w-4 h-4 mr-2" /> Settings
+                                    </Button>
+                                </Link>
+                            )}
                             <Button variant="ghost" className="w-full justify-start" onClick={() => { handleSignOut(); setIsMenuOpen(false); }}>
                                 <LogOut className="w-4 h-4 mr-2" /> Log Out
                             </Button>
@@ -98,11 +107,13 @@ export const Navbar: React.FC = () => {
                             <Link to="/signup" onClick={() => setIsMenuOpen(false)} className="block">
                                 <Button variant="primary" className="w-full justify-center">Sign Up</Button>
                             </Link>
-                            <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="block">
-                                <Button variant="ghost" className="w-full justify-center">
-                                    <SettingsIcon className="w-4 h-4 mr-2" /> Settings
-                                </Button>
-                            </Link>
+                            {!isDemoMode && (
+                                <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="block">
+                                    <Button variant="ghost" className="w-full justify-center">
+                                        <SettingsIcon className="w-4 h-4 mr-2" /> Settings
+                                    </Button>
+                                </Link>
+                            )}
                         </>
                     )}
                 </div>
